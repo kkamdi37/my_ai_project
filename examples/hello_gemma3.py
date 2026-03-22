@@ -1,4 +1,7 @@
 #!/bin/env python3
+#
+# source [PYTHON3_VENV_PATH]/activate
+#
 
 import ollama
 

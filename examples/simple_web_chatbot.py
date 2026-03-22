@@ -1,4 +1,6 @@
-# streamlit run simple_web_chatbot.py
+# Shell> source [PYTHON3_VENV_PATH]/activate
+# Shell> streamlit run simple_web_chatbot.py
+#
 
 import streamlit as st
 from langchain_ollama import OllamaLLM

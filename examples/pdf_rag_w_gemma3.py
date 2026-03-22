@@ -1,5 +1,7 @@
 #!/bin/env python3
 #
+# source [PYTHON3_VENV_PATH]/activate
+#
 # pip3 install langchain langchain-community langchain-core
 # pip3 install langchain-ollama pypdf faiss-cpu
 #
