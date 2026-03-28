@@ -20,6 +20,9 @@ OLLAMA_API_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = "gemma3"
 # ====================
 
+# Track running tasks per chat
+active_tasks = {}
+
 
 async def query_ollama(prompt: str) -> str:
     """Send request to Ollama"""
@@ -38,31 +41,55 @@ async def query_ollama(prompt: str) -> str:
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
+    chat_id = update.effective_chat.id
+    user_message = update.message.text.strip()
 
-    # Start typing indicator
-    async def keep_typing():
-        while True:
-            await context.bot.send_chat_action(
-                chat_id=update.effective_chat.id,
-                action=ChatAction.TYPING,
-            )
-            await asyncio.sleep(4)
+    # 🔴 INTERRUPT COMMAND
+    if user_message.lower() in ["stop", "/stop", "cancel"]:
+        if chat_id in active_tasks:
+            active_tasks[chat_id].cancel()
+            del active_tasks[chat_id]
+            await update.message.reply_text("⛔ Generation stopped.")
+        else:
+            await update.message.reply_text("Nothing to stop.")
+        return
 
-    typing_task = asyncio.create_task(keep_typing())
+    # If already running, optionally block or cancel previous
+    if chat_id in active_tasks:
+        await update.message.reply_text("⚠️ Already generating. Send 'stop' to cancel.")
+        return
 
-    try:
-        # Query Ollama
-        reply = await query_ollama(user_message)
+    async def process():
+        # Typing indicator loop
+        async def keep_typing():
+            while True:
+                await context.bot.send_chat_action(
+                    chat_id=chat_id,
+                    action=ChatAction.TYPING,
+                )
+                await asyncio.sleep(4)
 
-        # Send response
-        await update.message.reply_text(reply)
+        typing_task = asyncio.create_task(keep_typing())
 
-    except Exception as e:
-        await update.message.reply_text(f"Error: {str(e)}")
+        try:
+            reply = await query_ollama(user_message)
+            await update.message.reply_text(reply)
 
-    finally:
-        typing_task.cancel()
+        except asyncio.CancelledError:
+            await update.message.reply_text("⛔ Generation interrupted.")
+            raise
+
+        except Exception as e:
+            await update.message.reply_text(f"Error: {str(e)}")
+
+        finally:
+            typing_task.cancel()
+            if chat_id in active_tasks:
+                del active_tasks[chat_id]
+
+    # Create and store task
+    task = asyncio.create_task(process())
+    active_tasks[chat_id] = task
 
 
 def main():
@@ -70,7 +97,7 @@ def main():
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("Bot is running...")
+    print("Bot is running (with interrupt support)...")
     app.run_polling()
 
 
