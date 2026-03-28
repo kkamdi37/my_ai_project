@@ -18,26 +18,45 @@ if not "MY_TELEGRAM_BOT_TOKEN" in os.environ:
 TELEGRAM_BOT_TOKEN = os.environ["MY_TELEGRAM_BOT_TOKEN"]
 OLLAMA_API_URL = "http://localhost:11434/api/chat"
 OLLAMA_MODEL = "gemma3"
+#OLLAMA_MODEL = "qwen3.5"
+
+MAX_HISTORY = 3  # limit conversation length
 # ====================
 
 # Track running tasks per chat
 active_tasks = {}
 
+# Store conversation memory per chat
+chat_histories = {}
 
-async def query_ollama(prompt: str) -> str:
-    """Send request to Ollama"""
+
+async def query_ollama(messages):
+    """Call Ollama chat API with history"""
     async with httpx.AsyncClient(timeout=300.0) as client:
         response = await client.post(
             OLLAMA_API_URL,
             json={
                 "model": OLLAMA_MODEL,
-                "messages": [ {"role": "user", "content": prompt} ],
+                "messages": messages,
                 "stream": False
-            }
+            },
         )
         response.raise_for_status()
         data = response.json()
         return data["message"]["content"]
+
+
+def get_history(chat_id):
+    if chat_id not in chat_histories:
+        chat_histories[chat_id] = []
+    return chat_histories[chat_id]
+
+
+def trim_history(history):
+    """Keep only recent messages"""
+    if len(history) > MAX_HISTORY * 2:
+        return history[-MAX_HISTORY * 2 :]
+    return history
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -54,10 +73,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Nothing to stop.")
         return
 
-    # If already running, optionally block or cancel previous
+    # 🧹 RESET MEMORY
+    if user_message.lower() in ["/reset", "reset"]:
+        chat_histories[chat_id] = []
+        await update.message.reply_text("🧠 Memory cleared.")
+        return
+
+    # Prevent overlapping requests
     if chat_id in active_tasks:
         await update.message.reply_text("⚠️ Already generating. Send 'stop' to cancel.")
         return
+
+    history = get_history(chat_id)
 
     async def process():
         # Typing indicator loop
@@ -72,7 +99,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         typing_task = asyncio.create_task(keep_typing())
 
         try:
-            reply = await query_ollama(user_message)
+            # Add user message to history
+            history.append({"role": "user", "content": user_message})
+
+            # Trim history before sending
+            messages = trim_history(history)
+
+            # Query Ollama
+            reply = await query_ollama(messages)
+
+            # Save assistant response
+            history.append({"role": "assistant", "content": reply})
+
+            # Send reply
             await update.message.reply_text(reply)
 
         except asyncio.CancelledError:
@@ -97,7 +136,7 @@ def main():
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("Bot is running (with interrupt support)...")
+    print("Bot is running (memory + interrupt enabled)...")
     app.run_polling()
 
 
