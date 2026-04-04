@@ -50,6 +50,48 @@ def notion_create_page(parent_id, title):
     return requests.post(url, headers=headers, json=payload).json()
 
 
+def notion_update_page(page_id, title=None):
+    url = f"{BASE_URL}/pages/{page_id}"
+
+    properties = {}
+
+    if title:
+        properties["title"] = [
+            {
+                "text": {"content": title}
+            }
+        ]
+
+    payload = {
+        "properties": properties
+    }
+
+    return requests.patch(url, headers=headers, json=payload).json()
+
+
+def notion_append_block(parent_block_id, content):
+    url = f"{BASE_URL}/blocks/{parent_block_id}/children"
+
+    payload = {
+        "children": [
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {"content": content}
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    return requests.patch(url, headers=headers, json=payload).json()
+
+
 # ---------------------------
 # 🧠 MCP Dispatcher
 # ---------------------------
@@ -80,6 +122,20 @@ async def mcp_endpoint(req: Request):
             result = notion_create_page(
                 params["parent_id"],
                 params["title"]
+            )
+
+        # ✏️ Update page title
+        elif method == "notion.update_page":
+            result = notion_update_page(
+                params["page_id"],
+                params.get("title")
+            )
+
+        # ➕ Append content to page
+        elif method == "notion.append_block":
+            result = notion_append_block(
+                params["block_id"],
+                params["content"]
             )
 
         # 📦 Tool discovery (VERY useful for MCP clients)
@@ -129,6 +185,30 @@ async def mcp_endpoint(req: Request):
                                 "title": {"type": "string"}
                             },
                             "required": ["parent_id", "title"]
+                        }
+                    },
+                    {
+                        "name": "notion.update_page",
+                        "description": "Update a Notion page title",
+                        "input_schema": {
+                            "type": "object",
+                            "properties": {
+                                "page_id": {"type": "string"},
+                                "title": {"type": "string"}
+                            },
+                            "required": ["page_id"]
+                        }
+                    },
+                    {
+                        "name": "notion.append_block",
+                        "description": "Append content to a Notion page",
+                        "input_schema": {
+                            "type": "object",
+                            "properties": {
+                                "block_id": {"type": "string"},
+                                "content": {"type": "string"}
+                            },
+                            "required": ["block_id", "content"]
                         }
                     }
                 ]
