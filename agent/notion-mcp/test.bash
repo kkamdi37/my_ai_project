@@ -16,7 +16,7 @@ curl http://localhost:8000/mcp \
     "id": 1,
     "method": "notion.update_page",
     "params": {
-      "page_id": "3373ae85-3486-807d-82c3-ec2a8ddfa259",
+      "page_id": "[YOUR_PAGE_ID_HERE]",
       "title": "Updated Title 🚀"
     }
   }'
@@ -29,7 +29,7 @@ curl http://localhost:8000/mcp \
     "id": 1,
     "method": "notion.append_block",
     "params": {
-      "block_id": "3373ae85-3486-807d-82c3-ec2a8ddfa259",
+      "block_id": "[YOUR_PAGE_ID_HERE]",
       "content": "This was added via MCP!"
     }
   }'
