@@ -1,8 +1,3 @@
-#!/bin/env python3
-#
-# source ~/source_me
-#
-
 import os
 from fastapi import FastAPI, Request
 import requests
@@ -10,12 +5,12 @@ import requests
 app = FastAPI()
 
 # 🔑 Config
-INTERNAL_INTEGRATION_TOKEN = os.getenv("INTERNAL_INTEGRATION_TOKEN")
+NOTION_TOKEN = os.getenv("INTERNAL_INTEGRATION_TOKEN")
 NOTION_VERSION = "2022-06-28"
 BASE_URL = "https://api.notion.com/v1"
 
 headers = {
-    "Authorization": f"Bearer {INTERNAL_INTEGRATION_TOKEN}",
+    "Authorization": f"Bearer {NOTION_TOKEN}",
     "Notion-Version": NOTION_VERSION,
     "Content-Type": "application/json"
 }
