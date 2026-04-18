@@ -2,9 +2,6 @@
 #
 # source [PYTHON3_VENV_PATH]/activate
 #
-# pip3 install langchain langchain-community langchain-core
-# pip3 install langchain-ollama pypdf faiss-cpu
-#
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -32,7 +29,7 @@ retriever = vectorstore.as_retriever()
 
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
-llm = ChatOllama(model="gemma3")
+llm = ChatOllama(model="gemma4")
 
 # Define a strict prompt to ensure the model uses only the provided context
 template = """Use the following pieces of context to answer the question at the end.
