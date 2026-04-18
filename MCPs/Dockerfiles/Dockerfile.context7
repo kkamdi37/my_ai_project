@@ -1,0 +1,4 @@
+FROM node:lts-alpine3.22
+WORKDIR /app
+RUN npm install -g @upstash/context7-mcp
+CMD ["context7-mcp", "--transport", "http", "--port", "3000"]
