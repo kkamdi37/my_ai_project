@@ -1,0 +1,3 @@
+FROM node:lts-alpine3.22
+WORKDIR /app
+CMD ["npx", "-y", "@notionhq/notion-mcp-server", "--transport", "http", "--port", "3000"]
