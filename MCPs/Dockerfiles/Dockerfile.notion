@@ -1,3 +1,8 @@
 FROM node:lts-alpine3.22
 WORKDIR /app
-CMD ["npx", "-y", "@notionhq/notion-mcp-server", "--transport", "http", "--port", "3000"]
+COPY ./notion-mcp-server-main.zip /app
+RUN unzip notion-mcp-server-main.zip
+WORKDIR /app/notion-mcp-server-main
+RUN npm install
+RUN npm run build
+CMD ["/app/notion-mcp-server-main/bin/cli.mjs", "--transport", "http", "--port", "3000"]
