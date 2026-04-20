@@ -1,0 +1,8 @@
+FROM node:lts-alpine
+WORKDIR /root/workspace
+WORKDIR /app/servers
+COPY ./servers /app/servers
+RUN npm install
+RUN npm run build
+RUN npm install -g mcp-proxy
+CMD ["mcp-proxy", "--port", "3001", "--", "node", "src/filesystem/dist/index.js", "/root/workspace"]
