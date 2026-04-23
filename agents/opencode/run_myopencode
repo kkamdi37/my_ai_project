@@ -1,0 +1,1 @@
+docker run -it --rm --publish 4096:4096 --name my_opencode myopencode

@@ -1,0 +1,5 @@
+mkdir -p ~/.config/opencode
+echo '{ "$schema": "https://opencode.ai/config.json", "model": "ollama/gemma4", "provider": { "ollama": { "models": { "gemma4": { "_launch": true, "name": "gemma4" } }, "name": "Ollama", "npm": "@ai-sdk/openai-compatible", "options": { "baseURL": "http://host.docker.internal:11434/v1" } } } }' | jq > ~/.config/opencode/opencode.json
+
+mkdir -p ~/.local/state/opencode
+echo '{ "favorite": [], "recent": [ { "modelID": "gemma4", "providerID": "ollama" } ], "variant": {} }' | jq > ~/.local/state/opencode/model.json
