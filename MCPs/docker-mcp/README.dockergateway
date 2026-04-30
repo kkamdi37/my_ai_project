@@ -11,7 +11,7 @@ $ docker image rm mcp/filesystem mcp/time
 # Step 2: Create my own profile
 ################################################################################
 $ docker mcp profile create --name "My First Profile"
-$ cd ~/workspace/my_ai_project/MCPs/docker-mcp/mcp-server-yamls
+$ cd ~/workspace/my_ai_project/MCPs/docker-mcp/mcpserver-yamls
 $ docker mcp profile server add my_first_profile --server file://./my_time.yaml
 $ docker mcp profile server add my_first_profile --server file://./my_filesystem.yaml
 
