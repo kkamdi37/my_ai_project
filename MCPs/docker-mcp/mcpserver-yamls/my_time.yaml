@@ -1,0 +1,5 @@
+name: my_time
+title: "My Time MCP"
+type: server
+image: my_time:latest
+description: "Time and timezone conversion capabilities."

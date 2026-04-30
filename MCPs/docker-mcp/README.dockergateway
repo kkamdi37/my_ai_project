@@ -1,0 +1,22 @@
+################################################################################
+# Step 1: Pull some MCPs and change image name
+################################################################################
+$ docker pull mcp/filesystem
+$ docker tag mcp/filesystem my_filesystem
+$ docker pull mcp/time
+$ docker tag mcp/time my_time
+$ docker image rm mcp/filesystem mcp/time
+
+################################################################################
+# Step 2: Create my own profile
+################################################################################
+$ docker mcp profile create --name "My First Profile"
+$ cd ~/workspace/my_ai_project/MCPs/docker-mcp/mcp-server-yamls
+$ docker mcp profile server add my_first_profile --server file://./my_time.yaml
+$ docker mcp profile server add my_first_profile --server file://./my_filesystem.yaml
+
+################################################################################
+# Step 3: Create my own profile
+################################################################################
+# Run Docker MCP gateway with certain profile
+MCP_GATEWAY_AUTH_TOKEN=${YOUR_MCP_GATEWAY_TOKEN} docker mcp gateway run --port 8811 --transport streaming --profile my_first_profile

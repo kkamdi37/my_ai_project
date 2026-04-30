@@ -1,0 +1,20 @@
+name: my_filesystem
+title: "My Filesystem MCP"
+type: server
+image: my_filesystem:latest
+description: "A local filesystem MCP server for file operations"
+command:
+  - '{{my_filesystem.paths|volume-target|into}}'
+volumes:
+  - '{{my_filesystem.paths|volume|into}}'
+config:
+  - name: my_filesystem
+    description: The MCP server is allowed to access these paths
+    type: object
+    properties:
+      paths:
+        type: array
+        items:
+          type: string
+    required:
+      - paths
